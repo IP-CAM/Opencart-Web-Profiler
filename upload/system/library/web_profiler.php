@@ -9,6 +9,7 @@ class WebProfiler {
     protected $start_memory;
     protected $finish_memory;
     protected $entries = array();
+    protected $stopwatch = array();
     protected $response_code;
     protected $main_controller;
     protected $main_method;
@@ -96,6 +97,14 @@ class WebProfiler {
 
         $template['type_template'] = $template_data;
 
+        $query = array();
+        $entries = $this->getEntries('stopwatch');
+        if (isset($entries['stopwatch']) && !empty($entries['stopwatch'])) {
+            $query = $entries['stopwatch'];
+        }
+
+        $template['type_stopwatch'] = $query;
+
         $template['vqmod_logs'] = glob(DIR_SYSTEM . '../vqmod/logs/*.log');
 
         $system_logs = glob(DIR_SYSTEM . 'logs/*');
@@ -117,12 +126,16 @@ class WebProfiler {
         return $this->fetchTemplate('default/template/common/web_profiler.tpl', $template);
     }
 
-    public function addEntry($type, $text, $start, $primary = false) {
+    public function addEntry($type, $text, $start = null, $primary = false) {
         if ($primary && $type == 'method') {
             $front = explode('::', $text);
 
             $this->setMainController($front[0]);
             $this->setMainMethod($front[1]);
+        }
+
+        if (!$start && $type == 'stopwatch' && isset($this->stopwatch[$text])) {
+            $start = $this->stopwatch[$text];
         }
 
 		$this->entries[] = array(
@@ -181,6 +194,10 @@ class WebProfiler {
 		return $sorted_entries;
 	}
 
+    public function stopwatch($key) {
+		$this->stopwatch[$key] = microtime(true);
+    }
+
     public function setRegistries($registry) {
 		$this->config = $registry->get('config');
 		$this->db = $registry->get('db');
@@ -205,6 +222,10 @@ class WebProfiler {
       		return $content;
     	}
 	}
+
+    public function startTimer() {
+        return microtime(true);
+    }
 
     public function getStartTime() {
         return $this->start_time;

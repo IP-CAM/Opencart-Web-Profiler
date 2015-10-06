@@ -489,7 +489,7 @@ img[src*='welford.png'] {
                     <li class="list-title">Methods (<?php echo $type_method['quantity_entries']; ?>)</li>
                     <ul class="ocwp-ul ocwp-cf">
                         <?php foreach ($type_method['entries'] as $entry) { ?>
-                            <li class="ocwp-list-item ocwp-cf"><div class="method-col"><?php echo $entry['text']?>;</div><div class="time-col"><?php echo $entry['time_taken']; ?></div></li>
+                            <li class="ocwp-list-item ocwp-cf"><div class="method-col"><?php echo $entry['text']; ?></div><div class="time-col"><?php echo $entry['time_taken']; ?></div></li>
                         <?php } ?>
                     </ul>
                 </ul>
@@ -521,11 +521,25 @@ img[src*='welford.png'] {
                     <li class="list-title">Slowest <?php echo $type_template['quantity_entries']; ?> took <?php echo $type_template['time_taken_entries']; ?></li>
                     <ul class="ocwp-ul">
                         <?php foreach ($type_template['entries'] as $entry) { ?>
-                            <li class="ocwp-list-item ocwp-cf"><div class="method-col"><?php echo $entry['text']?>;</div><div class="time-col"><?php echo $entry['time_taken']; ?></div></li>
+                            <li class="ocwp-list-item ocwp-cf"><div class="method-col"><?php echo $entry['text']; ?></div><div class="time-col"><?php echo $entry['time_taken']; ?></div></li>
                         <?php } ?>
                     </ul>
                 </ul>
             </li>
+        <?php } ?>
+        <?php if ($type_stopwatch) { ?>
+        <li class="ocwp-dropdown ocwp-tab">
+            <img src="image/web_profiler/stopwatch.png" class="ocwp-web-icon">
+            <span class="ocwp-span-text-stopwatch ocwp-span"><?php echo $type_stopwatch['quantity_total']; ?> stopwatch entries : <?php echo $type_stopwatch['time_taken_total']; ?> secs</span>
+            <ul class="ocwp-dropdown-nav ocwp-dropdown-container-styles ocwp-dropdown-nav-templates ocwp-text-white ocwp-ul">
+                <li class="list-title">Slowest <?php echo $type_stopwatch['quantity_entries']; ?> took <?php echo $type_stopwatch['time_taken_entries']; ?></li>
+                <ul class="ocwp-ul">
+                    <?php foreach ($type_stopwatch['entries'] as $entry) { ?>
+                        <li class="ocwp-list-item ocwp-cf"><div class="method-col"><?php echo $entry['text']; ?></div><div class="time-col"><?php echo $entry['time_taken']; ?></div></li>
+                    <?php } ?>
+                </ul>
+            </ul>
+        </li>
         <?php } ?>
         <li class="ocwp-dropdown">
             <img src="image/web_profiler/clock.svg" class="ocwp-web-icon"><span class="ocwp-span-text-dynamic ocwp-span"><?php echo $time_taken; ?> secs</span>
@@ -554,7 +568,7 @@ img[src*='welford.png'] {
                 <li><h3 class="log-title">System Logs</h3></li>
                 <?php if ($system_logs) { ?>
                 <?php foreach ($system_logs as $system_log) { ?>
-                <li><?php echo $system_log['name'] . '(' . $system_log['size'] . ')'; ?></li>
+                <li><?php echo $system_log['name'] . ' (' . $system_log['size'] . ')'; ?><a class="wp-ajax" data-type="delete_log" data-file="<?php echo $system_log['name']; ?>">Delete</a></li>
                 <?php } ?>
                 <?php } else { ?>
                 <li>No system logs found</li>
@@ -569,6 +583,10 @@ $('.wp-ajax').bind('click', function() {
         type: $(this).attr('data-type')
     };
 
+    if ($(this).attr('data-file')) {
+        data.file = $(this).attr('data-file');
+    }
+
     $.ajax({
         url: 'index.php?route=common/web_profiler/ajax',
         type: 'post',
@@ -576,9 +594,17 @@ $('.wp-ajax').bind('click', function() {
         dataType: 'json',
         success: function(json) {
             if (json['success']) {
-                $('a[data-type=' + json['type'] + ']').text(json['success']);
+                if (json['file']) {
+                    $('a[data-file="' + json['file'] + '"]').text(json['success']);
+                } else {
+                    $('a[data-type=' + json['type'] + ']').text(json['success']);
+                }
             } else {
-                $('a[data-type=' + json['type'] + ']').text('Failed');
+                if (json['file']) {
+                    $('a[data-file="' + json['file'] + '"]').text('Failed');
+                } else {
+                    $('a[data-type=' + json['type'] + ']').text('Failed');
+                }
             }
         }
     });

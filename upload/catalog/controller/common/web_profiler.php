@@ -7,7 +7,8 @@ class ControllerCommonWebProfiler extends Controller {
             'system_cache',
             'system_log',
             'toggle_wplog',
-            'toggle_wptemplate'
+            'toggle_wptemplate',
+            'delete_log'
         );
 
         $json = array();
@@ -17,53 +18,46 @@ class ControllerCommonWebProfiler extends Controller {
         }
 
         if ($this->request->post['type'] == 'vqmod_cache') {
-            $json['type'] = 'vqmod_cache';
             $json['success'] = $this->clearVqmodCache();
         }
 
         if ($this->request->post['type'] == 'system_cache') {
-            $json['type'] = 'system_cache';
             $json['success'] = $this->clearSystemCache();
         }
 
         if ($this->request->post['type'] == 'toggle_wplog') {
-            $json['type'] = 'toggle_wplog';
             $json['success'] = $this->toggleWpLog();
         }
 
         if ($this->request->post['type'] == 'toggle_wptemplate') {
-            $json['type'] = 'toggle_wptemplate';
             $json['success'] = $this->toggleWpTemplate();
+        }
+
+        if ($this->request->post['type'] == 'delete_log') {
+            $json['success'] = $this->deleteLog($this->request->post['file']);
+        }
+
+        if (isset($this->request->post['file'])) {
+            $json['file'] = $this->request->post['file'];
+        } else {
+            $json['type'] = $this->request->post['type'];
         }
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
     }
 
-    private function clearVqmodCache() {
+    private function deleteLog($file) {
         $error = array();
 
-		$files = glob(DIR_SYSTEM . '../vqmod/vqcache/*');
-		foreach($files as $file) {
-            if (!$this->deleteFile($file)) {
+		if (file_exists(DIR_LOGS . $file)) {
+			if (!unlink(DIR_LOGS . $file)) {
                 $error[] = 'Failed to delete ' . $file;
             }
 		}
 
-		if (file_exists(DIR_SYSTEM . '../vqmod/mods.cache')) {
-			if (!unlink(DIR_SYSTEM . '../vqmod/mods.cache')) {
-                $error[] = 'Failed to delete mods.cache';
-            }
-		}
-
-		if (file_exists(DIR_SYSTEM . '../vqmod/checked.cache')) {
-			if (!unlink(DIR_SYSTEM . '../vqmod/checked.cache')) {
-                $error[] = 'Failed to delete checked.cache';
-            }
-		}
-
         if (empty($error)) {
-            $success = 'vQmod cache cleared.';
+            $success = 'Deleted';
         } else {
             $success = false;
         }
@@ -119,6 +113,37 @@ class ControllerCommonWebProfiler extends Controller {
 
         if (empty($error)) {
             $success = 'Toolbar removed. Clear cookies to re-enable.';
+        } else {
+            $success = false;
+        }
+
+		return $success;
+    }
+
+    private function clearVqmodCache() {
+        $error = array();
+
+		$files = glob(DIR_SYSTEM . '../vqmod/vqcache/*');
+		foreach($files as $file) {
+            if (!$this->deleteFile($file)) {
+                $error[] = 'Failed to delete ' . $file;
+            }
+		}
+
+		if (file_exists(DIR_SYSTEM . '../vqmod/mods.cache')) {
+			if (!unlink(DIR_SYSTEM . '../vqmod/mods.cache')) {
+                $error[] = 'Failed to delete mods.cache';
+            }
+		}
+
+		if (file_exists(DIR_SYSTEM . '../vqmod/checked.cache')) {
+			if (!unlink(DIR_SYSTEM . '../vqmod/checked.cache')) {
+                $error[] = 'Failed to delete checked.cache';
+            }
+		}
+
+        if (empty($error)) {
+            $success = 'vQmod cache cleared.';
         } else {
             $success = false;
         }
