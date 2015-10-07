@@ -51,7 +51,9 @@ class ControllerCommonWebProfiler extends Controller {
         $error = array();
 
 		if (file_exists(DIR_LOGS . $file)) {
-			if (!unlink(DIR_LOGS . $file)) {
+            chmod(DIR_LOGS . $file, 0777);
+
+			if (!@unlink(DIR_LOGS . $file)) {
                 $error[] = 'Failed to delete ' . $file;
             }
 		}
@@ -68,7 +70,7 @@ class ControllerCommonWebProfiler extends Controller {
     private function clearSystemCache() {
         $error = array();
 
-		$files = glob(DIR_SYSTEM . 'cache/*');
+		$files = glob(DIR_CACHE . '*');
 		foreach($files as $file) {
             if (!$this->deleteFile($file)) {
                 $error[] = 'Failed to delete ' . $file;
