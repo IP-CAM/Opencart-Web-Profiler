@@ -43,6 +43,7 @@ class WebProfiler {
         if (isset($this->request->cookie['wplog']) && $this->request->cookie['wplog'] == 1) {
             $log = new Log('web_profiler.txt');
             $log->write('START: ' . $this->request->server['REQUEST_URI'] . ' Response: ' . $this->getResponseCode() . ' Action: ' . $this->getMainController() . '::' . $this->getMainMethod());
+            $log->write('TIME TAKEN: ' . $this->formatTime($this->getFinishTime() - $this->getStartTime()));
 
             $entry_groups = $this->getEntries('', 500);
 
