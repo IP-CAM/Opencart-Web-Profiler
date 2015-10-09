@@ -35,14 +35,14 @@
 		</operation>
 	</file>
     <!-- Set registries -->
-	<file name="catalog/controller/common/header.php">
+	<file name="system/engine/controller.php">
 		<operation>
-			<search position="after"><![CDATA[index() {]]></search>
+			<search position="after"><![CDATA[$this->registry = $registry;]]></search>
 			<add><![CDATA[
                 global $_wp;
 
                 if ($_wp) {
-                    $_wp->setRegistries($this->registry);
+                    $_wp->setRegistries($registry);
 
                     //Set default cookies; logging = off, template = on.
                     if (!isset($this->request->cookie['wplog'])) {
